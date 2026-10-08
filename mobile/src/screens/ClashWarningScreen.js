@@ -13,15 +13,13 @@ import { PrimaryButton } from '../components/ui';
 
 import { useApp } from '../context/AppContext';
 
-export default function ClashWarningScreen({ navigation, route }) {
+export default function ClashWarningScreen({ navigation }) {
   const { clashes } = useApp();
 
   const clash = clashes[0] || {};
-  const clashingModuleCode = clash.moduleB || 'IT3070';
-  const clashingGroupName = clash.groupB ? `Group ${clash.groupB.replace('G', '')}` : 'Group 2';
-  const conflictDescription = clash.moduleA
-    ? `Overlaps ${clash.moduleA}-${clash.groupA} · ${clash.dayOfWeek || clash.day} ${clash.overlapWindow}`
-    : 'Overlaps IT3060-G1 · Mon 10:00–12:00';
+  const clashingModuleCode = clash.moduleB;
+  const clashingGroupName = `Group ${clash.groupB?.replace(/^G/, '')}`;
+  const conflictDescription = `Overlaps ${clash.moduleA} - Group ${clash.groupA?.replace(/^G/, '')} · ${clash.day} ${clash.overlapWindow?.replace('–', '-')}`;
 
   const handleViewAlternatives = () => {
     navigation.navigate('AlternativeSelection', {
@@ -31,8 +29,7 @@ export default function ClashWarningScreen({ navigation, route }) {
 
   const handleAskAdvisor = () => {
     navigation.navigate('HelpRequest', {
-      conflictDescription,
-      modules: `${clashingModuleCode}-${clash.groupB || 'G2'} vs ${clash.moduleA || 'IT3060'}-${clash.groupA || 'G1'}`,
+      moduleCode: clashingModuleCode,
     });
   };
 
