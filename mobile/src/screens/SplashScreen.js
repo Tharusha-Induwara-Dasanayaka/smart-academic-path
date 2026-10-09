@@ -45,7 +45,7 @@ export default function SplashScreen({ navigation }) {
       }),
     ]).start();
 
-    // Navigate after ~2s animation
+    // Navigate after ~2.5s to allow animations to fully complete
     const timer = setTimeout(() => {
       if (!hasSeenOnboarding) {
         navigation.replace('Onboarding');
@@ -60,7 +60,7 @@ export default function SplashScreen({ navigation }) {
       } else {
         navigation.replace('Login');
       }
-    }, 2000);
+    }, 2500);
 
     return () => clearTimeout(timer);
   }, [hasSeenOnboarding, isAuthenticated, role]);
