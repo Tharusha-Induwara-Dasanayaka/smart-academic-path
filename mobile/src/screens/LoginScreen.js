@@ -51,9 +51,9 @@ export default function LoginScreen({ navigation }) {
     setIsAuthenticated(true);
     setRole(userRole);
     if (userRole === 'advisor') {
-      navigation.replace('AdvisorCases');
+      navigation.navigate('AdvisorCases'); // navigate keeps Login in stack so back button works
     } else if (userRole === 'admin') {
-      navigation.replace('AdminStatus');
+      navigation.navigate('AdminStatus');  // same for admin
     } else {
       navigation.replace('MainTabs');
     }
