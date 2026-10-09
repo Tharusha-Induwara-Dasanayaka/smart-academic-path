@@ -15,13 +15,21 @@ import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 
 export default function LoginScreen({ navigation }) {
-  const { login, loginDemo } = useAuth();
+  const { login, loginDemo, isAuthenticated: authIsAuthenticated } = useAuth();
   const { setRole, setIsAuthenticated } = useApp();
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Keep AppContext isAuthenticated in sync with AuthContext token on mount
+  // This fixes the dual-store desync on cold restart
+  React.useEffect(() => {
+    if (authIsAuthenticated) {
+      setIsAuthenticated(true);
+    }
+  }, [authIsAuthenticated]);
 
   const validate = () => {
     const newErrors = {};
