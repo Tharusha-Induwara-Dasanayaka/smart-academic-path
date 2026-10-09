@@ -11,14 +11,22 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
 import { PrimaryButton, Card } from '../components/ui';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function DashboardScreen({ navigation }) {
-  const { student, selectedModules, clashes, registrationStatus, lastSyncTime } = useApp();
+  const { student, selectedModules, clashes, registrationStatus, lastSyncTime, logout } = useApp();
+  const { logout: authLogout } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 600);
+  };
+
+  const handleLogout = async () => {
+    await authLogout();   // clears SecureStore token
+    logout();             // clears AppContext state
+    navigation.replace('Login');
   };
 
   // Format lastSyncTime (timestamp) into a readable "X mins ago" string
@@ -67,11 +75,18 @@ export default function DashboardScreen({ navigation }) {
         colors={[COLORS.primaryGradientStart, COLORS.primaryGradientEnd]}
         style={styles.header}
       >
-        <Text style={styles.greeting}>Hi, {student?.name?.split(' ')[0] || 'Nethmi'}</Text>
-        <Text style={styles.subGreeting}>Semester {student?.semester || 2} registration is open</Text>
-        {lastSyncTime ? (
-          <Text style={styles.syncText}>Last synced: {formatSyncTime(lastSyncTime)}</Text>
-        ) : null}
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.greeting}>Hi, {student?.name?.split(' ')[0] || 'Nethmi'}</Text>
+            <Text style={styles.subGreeting}>Semester {student?.semester || 2} registration is open</Text>
+            {lastSyncTime ? (
+              <Text style={styles.syncText}>Last synced: {formatSyncTime(lastSyncTime)}</Text>
+            ) : null}
+          </View>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn} activeOpacity={0.7}>
+            <Text style={styles.logoutIcon}>⏻</Text>
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
 
       <View style={styles.body}>
@@ -193,9 +208,24 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xl,
     paddingHorizontal: SPACING.base,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
   greeting: { color: COLORS.white, fontSize: FONTS.sizes.xxl, fontWeight: '800' },
   subGreeting: { color: 'rgba(255,255,255,0.85)', fontSize: FONTS.sizes.base, marginTop: 4 },
   syncText: { color: 'rgba(255,255,255,0.55)', fontSize: FONTS.sizes.xs, marginTop: 6 },
+  logoutBtn: {
+    marginTop: 4,
+    padding: 6,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  logoutIcon: {
+    fontSize: 18,
+    color: COLORS.white,
+  },
 
   body: { padding: SPACING.base, paddingTop: SPACING.lg },
 
