@@ -26,8 +26,16 @@ export default function LoginScreen({ navigation }) {
 
   const validate = () => {
     const newErrors = {};
-    if (!studentId.trim()) newErrors.studentId = 'Student ID is required';
-    if (!password) newErrors.password = 'Password is required';
+    if (!studentId.trim()) {
+      newErrors.studentId = 'Student ID is required';
+    } else if (studentId.trim().length < 9) {
+      newErrors.studentId = 'Student ID must be at least 9 characters';
+    }
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
