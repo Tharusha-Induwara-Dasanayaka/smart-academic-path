@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 
-import { useAuth } from '../context/AuthContext';
 import { COLORS, FONTS, SHADOWS } from '../constants/theme';
 
 // Screens
@@ -165,53 +165,81 @@ function MainTabs() {
 }
 
 import { useApp } from '../context/AppContext';
+import { getConfirmationRedirect } from '../utils/registrationLogic.mjs';
+
+function routeRedirect(routeName, role, isAuthenticated, registrationStatus, clashes) {
+  if (!isAuthenticated) return 'Login';
+  if (role !== 'student' && [
+    'MainTabs',
+    'CourseRegistration',
+    'ClashWarning',
+    'AlternativeSelection',
+    'ModuleDetail',
+    'WeeklyTimetable',
+    'Confirmation',
+    'HelpRequest',
+  ].includes(routeName)) {
+    return role === 'advisor' ? 'AdvisorCases' : 'AdminStatus';
+  }
+  if (routeName === 'AdvisorCases' && role !== 'advisor') {
+    return role === 'admin' ? 'AdminStatus' : 'MainTabs';
+  }
+  if (routeName === 'AdminStatus' && role !== 'admin') {
+    return role === 'advisor' ? 'AdvisorCases' : 'MainTabs';
+  }
+  if (routeName === 'ClashWarning' && clashes.length === 0) {
+    return 'CourseRegistration';
+  }
+  if (routeName === 'Confirmation') {
+    const redirect = getConfirmationRedirect(registrationStatus);
+    return redirect === 'Timetable' ? 'WeeklyTimetable' : redirect;
+  }
+  return null;
+}
+
+function guardRoute(ScreenComponent) {
+  return function GuardedRoute(props) {
+    const {
+      isReady,
+      isAuthenticated,
+      role,
+      registrationStatus,
+      clashes,
+    } = useApp();
+    const navigation = useNavigation();
+    const routeName = props.route.name;
+    const redirect = isReady
+      ? routeRedirect(routeName, role, isAuthenticated, registrationStatus, clashes)
+      : null;
+
+    useEffect(() => {
+      if (redirect) navigation.replace(redirect);
+    }, [redirect, navigation]);
+
+    if (!isReady || redirect) return null;
+    return <ScreenComponent {...props} />;
+  };
+}
+
+const GuardedMainTabs = guardRoute(MainTabs);
+const GuardedCourseRegistration = guardRoute(CourseRegistrationScreen);
+const GuardedClashWarning = guardRoute(ClashWarningScreen);
+const GuardedAlternatives = guardRoute(AlternativeSelectionScreen);
+const GuardedModuleDetail = guardRoute(ModuleDetailScreen);
+const GuardedWeeklyTimetable = guardRoute(WeeklyTimetableScreen);
+const GuardedConfirmation = guardRoute(ConfirmationScreen);
+const GuardedHelpRequest = guardRoute(HelpRequestScreen);
+const GuardedAdvisorCases = guardRoute(AdvisorCasesScreen);
+const GuardedAdminStatus = guardRoute(AdminStatusScreen);
 
 // Root App Navigator
 export default function AppNavigator() {
-  const { isAuthenticated, role, clashes } = useApp();
-
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
         animation: 'fade',
       }}
-      screenListeners={({ route, navigation }) => ({
-        focus: () => {
-          const publicScreens = ['Splash', 'Onboarding', 'Login', 'ForgotPassword'];
-          if (!publicScreens.includes(route.name)) {
-            // Guard 1: Block screens until logged in
-            if (!isAuthenticated) {
-              navigation.replace('Login');
-              return;
-            }
-
-            // Guard 2: Block advisor and admin screens for students
-            if (role === 'student') {
-              if (route.name === 'AdvisorCases' || route.name === 'AdminStatus') {
-                navigation.replace('MainTabs');
-                return;
-              }
-            } else if (role === 'advisor') {
-              if (route.name === 'AdminStatus') {
-                navigation.replace('AdvisorCases');
-                return;
-              }
-            } else if (role === 'admin') {
-              if (route.name === 'AdvisorCases') {
-                navigation.replace('AdminStatus');
-                return;
-              }
-            }
-
-            // Guard 3: Block Confirmation while any clash exists, and redirect to Selection
-            if (route.name === 'Confirmation' && clashes.length > 0) {
-              navigation.replace('CourseRegistration');
-              return;
-            }
-          }
-        },
-      })}
     >
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
@@ -219,16 +247,16 @@ export default function AppNavigator() {
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
 
       {/* Main App Screens */}
-      <Stack.Screen name="MainTabs" component={MainTabs} />
-      <Stack.Screen name="CourseRegistration" component={CourseRegistrationScreen} />
-      <Stack.Screen name="ClashWarning" component={ClashWarningScreen} />
-      <Stack.Screen name="AlternativeSelection" component={AlternativeSelectionScreen} />
-      <Stack.Screen name="ModuleDetail" component={ModuleDetailScreen} />
-      <Stack.Screen name="WeeklyTimetable" component={WeeklyTimetableScreen} />
-      <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
-      <Stack.Screen name="HelpRequest" component={HelpRequestScreen} />
-      <Stack.Screen name="AdvisorCases" component={AdvisorCasesScreen} />
-      <Stack.Screen name="AdminStatus" component={AdminStatusScreen} />
+      <Stack.Screen name="MainTabs" component={GuardedMainTabs} />
+      <Stack.Screen name="CourseRegistration" component={GuardedCourseRegistration} />
+      <Stack.Screen name="ClashWarning" component={GuardedClashWarning} />
+      <Stack.Screen name="AlternativeSelection" component={GuardedAlternatives} />
+      <Stack.Screen name="ModuleDetail" component={GuardedModuleDetail} />
+      <Stack.Screen name="WeeklyTimetable" component={GuardedWeeklyTimetable} />
+      <Stack.Screen name="Confirmation" component={GuardedConfirmation} />
+      <Stack.Screen name="HelpRequest" component={GuardedHelpRequest} />
+      <Stack.Screen name="AdvisorCases" component={GuardedAdvisorCases} />
+      <Stack.Screen name="AdminStatus" component={GuardedAdminStatus} />
     </Stack.Navigator>
   );
 }

@@ -13,7 +13,7 @@ import { COLORS, FONTS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
 export default function NotificationsScreen({ navigation }) {
-  const { notifications, markNotificationsRead } = useApp();
+  const { notifications, markAllRead, openNotification } = useApp();
   const [filter, setFilter] = useState('all'); // 'all' or 'unread'
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -22,18 +22,6 @@ export default function NotificationsScreen({ navigation }) {
     if (filter === 'unread') return !item.read;
     return true;
   });
-
-  const handleNotificationPress = (notif) => {
-    if (notif.targetRoute === 'Register') {
-      navigation.navigate('Register');
-    } else if (notif.targetRoute === 'Timetable') {
-      navigation.navigate('Timetable');
-    } else if (notif.targetRoute === 'Confirmation') {
-      navigation.navigate('Confirmation');
-    } else {
-      navigation.navigate('Home');
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -105,7 +93,7 @@ export default function NotificationsScreen({ navigation }) {
                   <TouchableOpacity
                     key={notif.id}
                     style={styles.warningCard}
-                    onPress={() => handleNotificationPress(notif)}
+                    onPress={() => openNotification(notif, navigation)}
                     activeOpacity={0.8}
                   >
                     <View style={styles.warningIconCircle}>
@@ -125,7 +113,7 @@ export default function NotificationsScreen({ navigation }) {
                   <TouchableOpacity
                     key={notif.id}
                     style={styles.infoCard}
-                    onPress={() => handleNotificationPress(notif)}
+                    onPress={() => openNotification(notif, navigation)}
                     activeOpacity={0.8}
                   >
                     <View style={styles.notifContent}>
@@ -142,7 +130,7 @@ export default function NotificationsScreen({ navigation }) {
                 <TouchableOpacity
                   key={notif.id}
                   style={styles.successCard}
-                  onPress={() => handleNotificationPress(notif)}
+                  onPress={() => openNotification(notif, navigation)}
                   activeOpacity={0.8}
                 >
                   <View style={styles.successIconCircle}>
@@ -163,7 +151,7 @@ export default function NotificationsScreen({ navigation }) {
         {unreadCount > 0 && (
           <TouchableOpacity
             style={styles.markAllReadBtn}
-            onPress={markNotificationsRead}
+            onPress={markAllRead}
             activeOpacity={0.7}
           >
             <Text style={styles.markAllReadText}>Mark all as read</Text>

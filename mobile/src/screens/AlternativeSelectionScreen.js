@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,66 +7,48 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import { PrimaryButton } from '../components/ui';
 import TimetableGrid from '../components/TimetableGrid';
 import { useApp } from '../context/AppContext';
-import { detectClashes, getAlternatives, getSeatInfo } from '../utils/clashLogic';
+import { getSeatInfo } from '../utils/clashLogic';
 
 export default function AlternativeSelectionScreen({ navigation, route }) {
-  const { groups, selectedModules, selectGroup, confirmRegistration } = useApp();
+  const {
+    groups,
+    getModuleAlternatives,
+    getRegistrationPreview,
+    confirmRegistration,
+  } = useApp();
 
   const moduleCode = route.params?.moduleCode || 'IT3070';
-
-  // Get alternatives for the clashing module
-  const rawAlternatives = useMemo(() => {
-    return getAlternatives(moduleCode, selectedModules, groups);
-  }, [moduleCode, selectedModules, groups]);
-
-  // Acceptance Test C: View alternatives shows G4 (Best match) and G6; G2 is not offered.
-  // Filter out any groups that clash with OTHER selected modules (like G2).
-  const availableAlternatives = useMemo(() => {
-    return rawAlternatives.filter((alt) => !alt.hasClashWithOthers);
-  }, [rawAlternatives]);
-
-  // Find best match or first available
-  const defaultSelected = useMemo(() => {
-    const best = availableAlternatives.find((a) => a.isBestMatch);
-    return best ? best.groupId : availableAlternatives[0]?.groupId || 'G4';
-  }, [availableAlternatives]);
-
+  const availableAlternatives = getModuleAlternatives(moduleCode).filter(
+    (alternative) => !alternative.hasClashWithOthers
+  );
+  const defaultSelected =
+    availableAlternatives.find((alternative) => alternative.isBestMatch)?.groupId ||
+    availableAlternatives.find((alternative) => !alternative.isFull)?.groupId ||
+    '';
   const [selectedGroupId, setSelectedGroupId] = useState(defaultSelected);
 
-  // Dynamic preview selections based on chosen alternative
-  const previewSelections = useMemo(() => {
-    return selectedModules.map((item) =>
-      item.moduleCode === moduleCode ? { moduleCode, groupId: selectedGroupId } : item
-    );
-  }, [selectedModules, moduleCode, selectedGroupId]);
+  useEffect(() => {
+    setSelectedGroupId(defaultSelected);
+  }, [moduleCode, defaultSelected]);
 
-  // Dynamic preview clashes
-  const previewClashes = useMemo(() => {
-    return detectClashes(previewSelections, groups);
-  }, [previewSelections, groups]);
-
-  const isClashFree = previewClashes.length === 0;
+  const preview = getRegistrationPreview(moduleCode, selectedGroupId);
+  const isClashFree = preview.isClashFree;
+  const selectedAlternative = availableAlternatives.find(
+    (alternative) => alternative.groupId === selectedGroupId
+  );
 
   const handleConfirm = () => {
-    if (!isClashFree) return;
-
-    // Apply alternative to state
-    selectGroup(moduleCode, selectedGroupId);
-
-    // Finalize registration
-    confirmRegistration();
-
-    // Navigate to confirmation
-    navigation.navigate('Confirmation', {
-      selectedGroup: selectedGroupId,
-      moduleCode,
-    });
+    const result = confirmRegistration(navigation, { moduleCode, groupId: selectedGroupId });
+    if (!result.success) {
+      Alert.alert('Unable to confirm registration', result.message);
+    }
   };
 
   return (
@@ -103,9 +85,11 @@ export default function AlternativeSelectionScreen({ navigation, route }) {
             const isSelected = selectedGroupId === alt.groupId;
             const seatInfo = getSeatInfo(alt.seatsLeft);
             const title = `${alt.moduleCode} – ${alt.groupName || `Group ${alt.groupId.replace('G', '')}`}`;
-            const detailText = `${alt.timeDisplay || `${alt.day} ${alt.start}-${alt.end}`} · ${seatInfo.text}${
-              alt.isBestMatch ? ' · Best match' : ''
-            }`;
+            const detailText = alt.isFull
+              ? 'Full'
+              : `${alt.timeDisplay || `${alt.day} ${alt.start}-${alt.end}`} · ${seatInfo.text}${
+                  alt.isBestMatch ? ' · Best match' : ''
+                }`;
 
             return (
               <TouchableOpacity
@@ -145,16 +129,16 @@ export default function AlternativeSelectionScreen({ navigation, route }) {
 
         {/* Dynamic Timetable Grid */}
         <TimetableGrid
-          selectedModules={previewSelections}
+          selectedModules={preview.selectedModules}
           groups={groups}
-          clashes={previewClashes}
+          clashes={preview.clashes}
         />
 
         {/* Helper status text */}
         {!isClashFree && (
           <View style={styles.clashWarningBanner}>
             <Text style={styles.clashWarningText}>
-              ⚠️ This option still has a timetable clash. Please select another group to confirm.
+              ⚠️ This group still clashes with {preview.conflictingModule}. Please select another group to confirm.
             </Text>
           </View>
         )}
@@ -165,7 +149,7 @@ export default function AlternativeSelectionScreen({ navigation, route }) {
         <PrimaryButton
           title="Confirm registration"
           onPress={handleConfirm}
-          disabled={!isClashFree}
+          disabled={!isClashFree || !selectedAlternative || selectedAlternative.isFull}
         />
         {!isClashFree && (
           <Text style={styles.disabledHelperText}>
