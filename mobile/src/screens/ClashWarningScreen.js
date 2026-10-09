@@ -78,6 +78,9 @@ export default function ClashWarningScreen({ navigation, route }) {
               {clashingModuleCode} – {clashingGroupName}
             </Text>
             <Text style={styles.conflictDetailText}>{conflictDescription}</Text>
+            <Text style={styles.conflictHint}>
+              Please select an alternative group to continue registration.
+            </Text>
           </View>
 
           {/* CTA: View Alternatives */}
@@ -208,6 +211,13 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.sm,
     color: '#FF3B30',
     fontWeight: '500',
+  },
+  conflictHint: {
+    fontSize: FONTS.sizes.xs,
+    color: '#FF3B30',
+    fontWeight: '400',
+    marginTop: 6,
+    opacity: 0.8,
   },
 
   btnWrap: {
