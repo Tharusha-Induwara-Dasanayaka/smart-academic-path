@@ -5,10 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
@@ -19,6 +19,15 @@ export default function AdvisorCasesScreen({ navigation }) {
   const [selectedCaseId, setSelectedCaseId] = useState(cases[0]?.id || 'case_1');
 
   const selectedCase = cases.find((c) => c.id === selectedCaseId) || cases[0];
+
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.replace('MainTabs', { screen: 'Profile' });
+  };
 
   const handleApprove = () => {
     if (!selectedCase) return;
@@ -51,10 +60,10 @@ export default function AdvisorCasesScreen({ navigation }) {
         colors={[COLORS.primaryGradientStart, COLORS.primaryGradientEnd]}
         style={styles.header}
       >
-        <SafeAreaView>
+        <SafeAreaView edges={[]}>
           <View style={styles.headerContent}>
             <TouchableOpacity
-              onPress={() => navigation.goBack()}
+              onPress={handleBack}
               style={styles.backBtn}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
