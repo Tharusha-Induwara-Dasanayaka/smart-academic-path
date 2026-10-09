@@ -16,9 +16,21 @@ import TimetableGrid from '../components/TimetableGrid';
 import { useApp } from '../context/AppContext';
 
 export default function WeeklyTimetableScreen({ navigation }) {
-  const { selectedModules, groups, clashes, registrationStatus, confirmRegistration } = useApp();
+  const {
+    selectedModules,
+    groups,
+    clashes,
+    isClashFree,
+    registrationStatus,
+    confirmRegistration,
+    reviewTimetable,
+  } = useApp();
 
-  const isClean = clashes.length === 0;
+  const isClean = isClashFree;
+
+  React.useEffect(() => {
+    reviewTimetable();
+  }, [reviewTimetable]);
 
   const handleExport = async () => {
     try {
@@ -41,20 +53,10 @@ export default function WeeklyTimetableScreen({ navigation }) {
   };
 
   const handleProceedToConfirmation = () => {
-    if (!isClean) {
-      Alert.alert(
-        'Clash Detected',
-        'You have timetable conflicts that must be resolved before confirming registration.',
-        [
-          { text: 'Resolve clash', onPress: () => navigation.navigate('Register') },
-          { text: 'Cancel', style: 'cancel' },
-        ]
-      );
-      return;
+    const result = confirmRegistration(navigation);
+    if (!result.success) {
+      Alert.alert('Unable to confirm registration', result.message);
     }
-
-    confirmRegistration();
-    navigation.navigate('Confirmation');
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,26 +12,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
 import { PrimaryButton, Badge } from '../components/ui';
 import { useApp } from '../context/AppContext';
-import { getSeatInfo, detectClashes } from '../utils/clashLogic';
+import { getSeatInfo } from '../utils/clashLogic';
 
-export default function CourseRegistrationScreen({ navigation, route }) {
+export default function CourseRegistrationScreen({ navigation }) {
   const {
     modules,
     groups,
     selectedModules,
     selectGroup,
     addNextAvailableModule,
-    clashes,
+    continueFromSelection,
   } = useApp();
 
   const [refreshing, setRefreshing] = useState(false);
-
-  // Auto-open clash warning if instructed by route param (e.g. from Dashboard Resume)
-  useEffect(() => {
-    if (route.params?.openClashModal && clashes.length > 0) {
-      navigation.navigate('ClashWarning');
-    }
-  }, [route.params, clashes.length]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -44,15 +37,9 @@ export default function CourseRegistrationScreen({ navigation, route }) {
       return;
     }
 
-    // Run pure clash detection
-    const activeClashes = detectClashes(selectedModules, groups);
-
-    if (activeClashes.length > 0) {
-      // Clashes detected -> show Clash Warning
-      navigation.navigate('ClashWarning');
-    } else {
-      // Clash-free -> go to Weekly Timetable
-      navigation.navigate('Timetable');
+    const result = continueFromSelection(navigation);
+    if (!result.success) {
+      Alert.alert('No Selection', result.message);
     }
   };
 
