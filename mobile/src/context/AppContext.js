@@ -231,7 +231,12 @@ export const AppProvider = ({ children }) => {
 
     return true;
   }, [selectGroup]);
-
+  
+  // Action: Delete case
+  const deleteCase = useCallback((caseId) => {
+    setCases((prev) => prev.filter((item) => item.id !== caseId));
+  }, []);
+      
   // Action: Mark all notifications as read
   const markNotificationsRead = useCallback(() => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -313,6 +318,7 @@ export const AppProvider = ({ children }) => {
         confirmRegistration,
         addCase,
         approveCase,
+        deleteCase,
         markNotificationsRead,
         setRole,
         setHasSeenOnboarding,
