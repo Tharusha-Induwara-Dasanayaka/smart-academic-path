@@ -107,7 +107,10 @@ export default function LoginScreen({ navigation }) {
           )}
 
           {/* Student ID */}
-          <Text style={styles.label}>Student ID</Text>
+          <View style={styles.labelRow}>
+            <Text style={styles.label}>Student ID</Text>
+            <Text style={styles.charCounter}>{studentId.length}/11</Text>
+          </View>
           <View style={[styles.inputWrap, errors.studentId && styles.inputError]}>
             <TextInput
               style={styles.input}
@@ -117,6 +120,7 @@ export default function LoginScreen({ navigation }) {
               onChangeText={(v) => { setStudentId(v); setErrors((e) => ({ ...e, studentId: null })); }}
               autoCapitalize="characters"
               autoCorrect={false}
+              maxLength={11}
             />
           </View>
           {errors.studentId && <Text style={styles.errorText}>{errors.studentId}</Text>}
@@ -216,6 +220,8 @@ const styles = StyleSheet.create({
   },
 
   label: { fontSize: FONTS.sizes.sm, color: COLORS.textSecondary, fontWeight: '600', marginBottom: SPACING.xs },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.xs },
+  charCounter: { fontSize: FONTS.sizes.xs, color: COLORS.textMuted },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
