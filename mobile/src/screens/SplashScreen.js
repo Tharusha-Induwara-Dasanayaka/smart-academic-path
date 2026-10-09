@@ -13,7 +13,7 @@ import { useApp } from '../context/AppContext';
 const { width, height } = Dimensions.get('window');
 
 export default function SplashScreen({ navigation }) {
-  const { hasSeenOnboarding, isAuthenticated, role } = useApp();
+  const { hasSeenOnboarding, isAuthenticated, role, isReady } = useApp();
   const logoScale = useRef(new Animated.Value(0.5)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
@@ -44,8 +44,13 @@ export default function SplashScreen({ navigation }) {
         useNativeDriver: true,
       }),
     ]).start();
+  }, []);
 
-    // Navigate after ~2.5s to allow animations to fully complete
+  useEffect(() => {
+    // Wait until AppContext has finished loading persisted state
+    // before deciding which screen to navigate to
+    if (!isReady) return;
+
     const timer = setTimeout(() => {
       if (!hasSeenOnboarding) {
         navigation.replace('Onboarding');
@@ -63,7 +68,7 @@ export default function SplashScreen({ navigation }) {
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, [hasSeenOnboarding, isAuthenticated, role]);
+  }, [isReady, hasSeenOnboarding, isAuthenticated, role]);
 
   return (
     <LinearGradient
