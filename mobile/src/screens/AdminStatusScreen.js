@@ -5,11 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { COLORS, FONTS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
@@ -28,6 +28,15 @@ export default function AdminStatusScreen({ navigation }) {
 
   const handleViewFullLog = () => {
     setShowLogModal(true);
+  };
+
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.replace('MainTabs', { screen: 'Profile' });
   };
 
   return (
@@ -92,10 +101,10 @@ export default function AdminStatusScreen({ navigation }) {
         colors={[COLORS.primaryGradientStart, COLORS.primaryGradientEnd]}
         style={styles.header}
       >
-        <SafeAreaView>
+        <SafeAreaView edges={[]}>
           <View style={styles.headerContent}>
             <TouchableOpacity
-              onPress={() => navigation.goBack()}
+              onPress={handleBack}
               style={styles.backBtn}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
