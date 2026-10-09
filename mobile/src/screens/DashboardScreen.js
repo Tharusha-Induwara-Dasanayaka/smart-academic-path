@@ -21,6 +21,17 @@ export default function DashboardScreen({ navigation }) {
     setTimeout(() => setRefreshing(false), 600);
   };
 
+  // Format lastSyncTime (timestamp) into a readable "X mins ago" string
+  const formatSyncTime = (timestamp) => {
+    if (!timestamp) return null;
+    const diffSeconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (diffSeconds < 10) return 'Just now';
+    if (diffSeconds < 60) return `${diffSeconds}s ago`;
+    const diffMins = Math.floor(diffSeconds / 60);
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    return 'Over an hour ago';
+  };
+
   const progress = {
     modules: selectedModules.length,
     total: 5,
@@ -58,7 +69,7 @@ export default function DashboardScreen({ navigation }) {
         <Text style={styles.greeting}>Hi, {student?.name?.split(' ')[0] || 'Nethmi'}</Text>
         <Text style={styles.subGreeting}>Semester {student?.semester || 2} registration is open</Text>
         {lastSyncTime ? (
-          <Text style={styles.syncText}>Last synced: {lastSyncTime}</Text>
+          <Text style={styles.syncText}>Last synced: {formatSyncTime(lastSyncTime)}</Text>
         ) : null}
       </LinearGradient>
 
