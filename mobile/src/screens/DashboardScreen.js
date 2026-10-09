@@ -51,7 +51,8 @@ export default function DashboardScreen({ navigation }) {
       // Step reached: clash_free -> Weekly Timetable
       navigation.navigate('Timetable');
     } else {
-      navigation.navigate('Register');
+      // not_started -> go to Course Registration (stack screen, not tab name)
+      navigation.navigate('CourseRegistration');
     }
   };
 
