@@ -481,11 +481,14 @@ const styles = StyleSheet.create({
     ...SHADOWS.sm,
   },
 
-  approveBtnDisabled: {
-    backgroundColor: '#9CA3AF',
-  },
+  
+approveBtnDisabled: {
+  backgroundColor: '#16A34A',
+},
+
 
   approveBtnText: {
+    
     color: COLORS.white,
     fontSize: 16,
     fontWeight: '800',
