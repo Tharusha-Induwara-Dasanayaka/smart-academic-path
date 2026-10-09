@@ -37,7 +37,7 @@ const demoInitialSelections = [
 const demoClashes = detectClashes(demoInitialSelections, MOCK_GROUPS);
 assert(demoClashes.length === 1, 'Initial state has exactly 1 clash (IT3060 G1 vs IT3070 G2)');
 assert(demoClashes[0].moduleA === 'IT3060' && demoClashes[0].moduleB === 'IT3070', 'Clash pair is IT3060 and IT3070');
-assert(demoClashes[0].overlapWindow === '10:00–12:00', 'Overlap window is 10:00–12:00');
+assert(demoClashes[0].overlapWindow === '10:00-12:00', 'Overlap window is 10:00-12:00');
 
 // 3. Different days must NOT clash
 const diffDayGroups = [

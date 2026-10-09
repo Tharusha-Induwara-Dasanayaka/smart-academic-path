@@ -17,12 +17,16 @@ import { COLORS, FONTS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
 import { PrimaryButton } from '../components/ui';
 import { useApp } from '../context/AppContext';
 
-export default function HelpRequestScreen({ navigation, route }) {
-  const { clashes, addCase } = useApp();
+export default function HelpRequestScreen({ navigation }) {
+  const { clashes, createCase } = useApp();
 
   const clash = clashes[0];
-  const conflictHeader = route.params?.modules || (clash ? `${clash.moduleB}-${clash.groupB} vs ${clash.moduleA}-${clash.groupA}` : 'IT3070-G2 vs IT3060-G1');
-  const conflictSub = route.params?.conflictDescription || (clash ? `${clash.day} ${clash.overlapWindow} · both required modules` : 'Mon 10:00-12:00 · both required modules');
+  const conflictHeader = clash
+    ? `${clash.moduleB} - Group ${clash.groupB.replace(/^G/, '')} vs ${clash.moduleA} - Group ${clash.groupA.replace(/^G/, '')}`
+    : '';
+  const conflictSub = clash
+    ? `${clash.day} ${clash.overlapWindow.replace('–', '-')} · both required modules`
+    : '';
 
   const [requestType, setRequestType] = useState('Approve an alternative group');
   const [message, setMessage] = useState(
@@ -35,12 +39,14 @@ export default function HelpRequestScreen({ navigation, route }) {
       return;
     }
 
-    // Add case to global state for Advisor Dashboard
-    addCase({
+    const result = createCase({
       requestType,
       message,
-      conflictDetails: `${conflictHeader} (${conflictSub})`,
     });
+    if (!result.success) {
+      Alert.alert('Unable to send request', result.message);
+      return;
+    }
 
     Alert.alert(
       'Request Sent',
