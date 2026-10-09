@@ -57,6 +57,9 @@ export default function DashboardScreen({ navigation }) {
       >
         <Text style={styles.greeting}>Hi, {student?.name?.split(' ')[0] || 'Nethmi'}</Text>
         <Text style={styles.subGreeting}>Semester {student?.semester || 2} registration is open</Text>
+        {lastSyncTime ? (
+          <Text style={styles.syncText}>Last synced: {lastSyncTime}</Text>
+        ) : null}
       </LinearGradient>
 
       <View style={styles.body}>
@@ -180,6 +183,7 @@ const styles = StyleSheet.create({
   },
   greeting: { color: COLORS.white, fontSize: FONTS.sizes.xxl, fontWeight: '800' },
   subGreeting: { color: 'rgba(255,255,255,0.85)', fontSize: FONTS.sizes.base, marginTop: 4 },
+  syncText: { color: 'rgba(255,255,255,0.55)', fontSize: FONTS.sizes.xs, marginTop: 6 },
 
   body: { padding: SPACING.base, paddingTop: SPACING.lg },
 
