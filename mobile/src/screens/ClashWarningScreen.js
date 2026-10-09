@@ -13,10 +13,11 @@ import { PrimaryButton } from '../components/ui';
 
 import { useApp } from '../context/AppContext';
 
-export default function ClashWarningScreen({ navigation, route }) {
+export default function ClashWarningScreen({ navigation }) {
   const { clashes } = useApp();
 
   const clash = clashes[0] || {};
+  const totalClashes = clashes.length;
   const clashingModuleCode = clash.moduleB || 'IT3070';
   const clashingGroupName = clash.groupB ? `Group ${clash.groupB.replace('G', '')}` : 'Group 2';
   const conflictDescription = clash.moduleA
@@ -70,7 +71,11 @@ export default function ClashWarningScreen({ navigation, route }) {
 
           {/* Heading */}
           <Text style={styles.title}>Time clash detected</Text>
-          <Text style={styles.subtitle}>This selection overlaps another class</Text>
+          <Text style={styles.subtitle}>
+            {totalClashes > 1
+              ? `${totalClashes} clashes found — showing clash 1 of ${totalClashes}`
+              : 'This selection overlaps another class'}
+          </Text>
 
           {/* Conflict Detail Box */}
           <View style={styles.conflictBox}>
