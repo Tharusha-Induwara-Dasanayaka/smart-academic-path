@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, SPACING, RADIUS } from '../constants/theme';
 import { PrimaryButton } from '../components/ui';
 import { useApp } from '../context/AppContext';
-import { getSeatInfo, detectClashes } from '../utils/clashLogic';
+import { getSeatInfo } from '../utils/clashLogic';
 
 export default function ModuleDetailScreen({ navigation, route }) {
   const {
@@ -21,6 +21,7 @@ export default function ModuleDetailScreen({ navigation, route }) {
     groups,
     selectedModules,
     selectGroup,
+    getModuleAlternatives,
     lastSyncTime,
   } = useApp();
 
@@ -51,10 +52,7 @@ export default function ModuleDetailScreen({ navigation, route }) {
     return () => clearInterval(timer);
   }, []);
 
-  // Other module selections
-  const otherSelections = useMemo(() => {
-    return selectedModules.filter((s) => s.moduleCode !== moduleCode);
-  }, [selectedModules, moduleCode]);
+  const alternatives = getModuleAlternatives(moduleCode);
 
   const handleAddToRegistration = () => {
     selectGroup(moduleCode, pickedGroupId);
@@ -116,9 +114,10 @@ export default function ModuleDetailScreen({ navigation, route }) {
         {/* Group Cards */}
         {moduleGroups.map((group) => {
           const isSelected = pickedGroupId === group.groupId;
-          const testHypothetical = [...otherSelections, { moduleCode, groupId: group.groupId }];
-          const groupClashes = detectClashes(testHypothetical, groups);
-          const hasClash = groupClashes.length > 0;
+          const groupAlternative = alternatives.find(
+            (alternative) => alternative.groupId === group.groupId
+          );
+          const hasClash = groupAlternative?.hasClashWithOthers || false;
           const seatInfo = getSeatInfo(group.seatsLeft);
           const timeText = `${group.groupName || `Group ${group.groupId.replace('G','')}`} · ${
             group.timeDisplay || `${group.day} ${group.start}–${group.end}`
@@ -129,10 +128,7 @@ export default function ModuleDetailScreen({ navigation, route }) {
               <TouchableOpacity
                 key={group._id}
                 style={styles.clashCard}
-                onPress={() => {
-                  setPickedGroupId(group.groupId);
-                  navigation.navigate('ClashWarning');
-                }}
+                onPress={() => setPickedGroupId(group.groupId)}
                 activeOpacity={0.85}
               >
                 <View style={{ flex: 1 }}>
