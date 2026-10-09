@@ -20,7 +20,7 @@ import { useApp } from '../context/AppContext';
 import { Modal } from 'react-native';
 
 export default function AdminStatusScreen({ navigation }) {
-  const { systemLogs } = useApp();
+  const { systemLogs, markSystemLogReviewed } = useApp();
   const [showLogModal, setShowLogModal] = useState(false);
 
   const uptime = '99.8%';
@@ -62,32 +62,62 @@ export default function AdminStatusScreen({ navigation }) {
             </View>
 
             {/* Table Rows */}
-            <ScrollView style={{ maxHeight: 350 }}>
-              {systemLogs.map((item, idx) => (
-                <View key={idx} style={styles.tableRow}>
-                  <Text style={[styles.tableCell, { flex: 1.2, color: '#6B7280', fontSize: 12 }]}>{item.time}</Text>
-                  <Text style={[styles.tableCell, { flex: 3, fontWeight: '600' }]}>{item.event}</Text>
-                  <Text
-                    style={[
-                      styles.tableCell,
-                      {
-                        flex: 1.2,
-                        textAlign: 'right',
-                        fontWeight: '700',
-                        color:
-                          item.status === 'Success'
-                            ? '#059669'
-                            : item.status === 'Warning'
-                            ? '#D97706'
-                            : '#2563EB',
-                      },
-                    ]}
-                  >
-                    {item.status}
-                  </Text>
-                </View>
-              ))}
-            </ScrollView>
+            
+<ScrollView style={{ maxHeight: 350 }}>
+  {systemLogs.map((item, idx) => (
+    <View key={idx} style={styles.tableRow}>
+      <Text
+        style={[
+          styles.tableCell,
+          { flex: 1.2, color: '#6B7280', fontSize: 12 },
+        ]}
+      >
+        {item.time}
+      </Text>
+
+      <View style={{ flex: 3 }}>
+        <Text style={[styles.tableCell, { fontWeight: '600' }]}>
+          {item.event}
+        </Text>
+
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: '700',
+            color: item.reviewed
+              ? '#059669'
+              : item.status === 'Success'
+              ? '#059669'
+              : item.status === 'Warning'
+              ? '#D97706'
+              : '#2563EB',
+          }}
+        >
+          {item.reviewed ? 'Reviewed' : item.status}
+        </Text>
+
+        {!item.reviewed && (
+          <TouchableOpacity
+            onPress={() => markSystemLogReviewed(idx)}
+            style={{
+              backgroundColor: '#16A34A',
+              paddingVertical: 6,
+              paddingHorizontal: 10,
+              borderRadius: 6,
+              alignSelf: 'flex-start',
+              marginTop: 6,
+            }}
+          >
+            <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
+              Mark as Reviewed
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  ))}
+</ScrollView>
+
 
             <View style={{ marginTop: 16 }}>
               <PrimaryButton title="Close Log" onPress={() => setShowLogModal(false)} />
