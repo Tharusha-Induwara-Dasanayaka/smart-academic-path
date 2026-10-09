@@ -27,6 +27,7 @@ export const AppProvider = ({ children }) => {
   const [isExplicitlyConfirmed, setIsExplicitlyConfirmed] = useState(false);
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [cases, setCases] = useState(INITIAL_CASES);
+  const [systemLogs, setSystemLogs] = useState(SYSTEM_LOGS);
   const [lastSyncTime, setLastSyncTime] = useState(Date.now());
   const [hasSeenOnboarding, setHasSeenOnboardingState] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -237,6 +238,16 @@ export const AppProvider = ({ children }) => {
     setCases((prev) => prev.filter((item) => item.id !== caseId));
   }, []);
       
+  // Action: Mark system log as reviewed
+  const markSystemLogReviewed = useCallback((logIndex) => {
+    setSystemLogs((prevLogs) =>
+      prevLogs.map((log, index) =>
+        index === logIndex
+          ? { ...log, reviewed: true }
+          : log
+      )
+    );
+  }, []);
   // Action: Mark all notifications as read
   const markNotificationsRead = useCallback(() => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -309,7 +320,7 @@ export const AppProvider = ({ children }) => {
         lastSyncTime,
         hasSeenOnboarding,
         isAuthenticated,
-        systemLogs: SYSTEM_LOGS,
+        systemLogs,
 
         // Actions
         selectGroup,
@@ -320,6 +331,7 @@ export const AppProvider = ({ children }) => {
         approveCase,
         deleteCase,
         markNotificationsRead,
+        markSystemLogReviewed,
         setRole,
         setHasSeenOnboarding,
         setIsAuthenticated,
