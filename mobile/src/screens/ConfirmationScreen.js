@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -15,24 +15,8 @@ import { PrimaryButton } from '../components/ui';
 import TimetableGrid from '../components/TimetableGrid';
 import { useApp } from '../context/AppContext';
 
-export default function ConfirmationScreen({ navigation, route }) {
-  const { selectedModules, groups, clashes, confirmRegistration } = useApp();
-
-  // ROUTE GUARD: Block Confirmation while any clash exists, and redirect to Selection
-  // Acceptance Test H: Typing /confirmation while clashing redirects back
-  useEffect(() => {
-    if (clashes.length > 0) {
-      Alert.alert(
-        'Clash Detected',
-        'Confirmation is blocked because timetable conflicts exist. Please resolve them first.'
-      );
-      navigation.replace('CourseRegistration');
-      return;
-    }
-
-    // On entry: confirm status and ensure push notification is delivered
-    confirmRegistration();
-  }, [clashes.length]);
+export default function ConfirmationScreen() {
+  const { selectedModules, groups } = useApp();
 
   const moduleSummary = selectedModules.map((s) => s.moduleCode).join(' · ');
 
@@ -53,10 +37,6 @@ export default function ConfirmationScreen({ navigation, route }) {
       Alert.alert('PDF Downloaded', 'Timetable PDF has been saved to your downloads.');
     }
   };
-
-  if (clashes.length > 0) {
-    return null; // Will redirect via useEffect
-  }
 
   return (
     <View style={styles.container}>

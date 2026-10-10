@@ -14,17 +14,20 @@ import { COLORS, FONTS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
 export default function AdvisorCasesScreen({ navigation }) {
-  const { cases, approveCase } = useApp();
+  const { cases, advisorApprove, advisorContact, getCaseRecommendation } = useApp();
 
   const [selectedCaseId, setSelectedCaseId] = useState(cases[0]?.id || 'case_1');
 
   const selectedCase = cases.find((c) => c.id === selectedCaseId) || cases[0];
+  const recommendation = selectedCase
+    ? getCaseRecommendation(selectedCase)
+    : null;
 
   const handleApprove = () => {
     if (!selectedCase) return;
 
     // Approve: mark resolved, apply suggested group to student selection, push notification
-    approveCase(selectedCase.id);
+    advisorApprove(selectedCase.id);
 
     Alert.alert(
       'Case Approved',
@@ -34,6 +37,7 @@ export default function AdvisorCasesScreen({ navigation }) {
   };
 
   const handleContact = () => {
+    if (!selectedCase || !advisorContact(selectedCase.id)) return;
     Alert.alert(
       'Contact Student',
       `Notification sent to ${selectedCase?.studentName} (${selectedCase?.studentId}@my.sliit.lk).`
@@ -138,10 +142,14 @@ export default function AdvisorCasesScreen({ navigation }) {
             {/* Suggested Action Card (Light blue) */}
             <View style={styles.suggestionCard}>
               <Text style={styles.suggestionTitle}>
-                Suggested: {selectedCase.suggestedModule || 'IT3070'}-{selectedCase.suggestedGroup || 'G4'}
+                Suggested: {recommendation
+                  ? `${recommendation.moduleCode}-${recommendation.groupId}`
+                  : ''}
               </Text>
               <Text style={styles.suggestionSub}>
-                {selectedCase.suggestedDetails || '12 seats available, no new clash'}
+                {recommendation
+                  ? `${recommendation.seatsLeft} seats available, no new clash`
+                  : 'No clash-free group with seats available'}
               </Text>
             </View>
 

@@ -50,7 +50,7 @@ assertTest(
     startClashes[0].moduleB === 'IT3070' &&
     startClashes[0].groupB === 'G2' &&
     startClashes[0].day === 'Mon' &&
-    startClashes[0].overlapWindow === '10:00–12:00'
+    startClashes[0].overlapWindow === '10:00-12:00'
 );
 
 // ==========================================

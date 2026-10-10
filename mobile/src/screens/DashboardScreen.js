@@ -14,7 +14,15 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 
 export default function DashboardScreen({ navigation }) {
-  const { student, selectedModules, clashes, registrationStatus, lastSyncTime, logout } = useApp();
+  const {
+    student,
+    clashes,
+    registrationStatus,
+    registrationProgress,
+    resumeRegistration,
+    lastSyncTime,
+    logout,
+  } = useApp();
   const { logout: authLogout } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -24,8 +32,8 @@ export default function DashboardScreen({ navigation }) {
   };
 
   const handleLogout = async () => {
-    await authLogout();   // clears SecureStore token
-    logout();             // clears AppContext state
+    await authLogout();
+    logout();
     navigation.replace('Login');
   };
 
@@ -40,28 +48,10 @@ export default function DashboardScreen({ navigation }) {
     return 'Over an hour ago';
   };
 
-  const progress = {
-    modules: selectedModules.length,
-    total: 5,
-    clashes: clashes.length,
-    timetableReviewed: registrationStatus === 'confirmed',
-  };
-
   const deadlineStr = 'Closes in 2 days, 11:59pm';
 
   const handleResumeCTA = () => {
-    if (registrationStatus === 'confirmed') {
-      navigation.navigate('Confirmation');
-    } else if (registrationStatus === 'has_clash') {
-      // Step reached: clash exists -> Selection / Clash flow
-      navigation.navigate('CourseRegistration', { openClashModal: true });
-    } else if (registrationStatus === 'clash_free') {
-      // Step reached: clash_free -> Weekly Timetable
-      navigation.navigate('Timetable');
-    } else {
-      // not_started -> go to Course Registration (stack screen, not tab name)
-      navigation.navigate('CourseRegistration');
-    }
+    resumeRegistration(navigation);
   };
 
   return (
@@ -121,14 +111,14 @@ export default function DashboardScreen({ navigation }) {
             <View style={styles.progressLine} />
             <View style={styles.stepContent}>
               <Text style={styles.stepTitle}>Modules selected</Text>
-              <Text style={styles.stepSubtitle}>{progress.modules} of {progress.total} chosen</Text>
+              <Text style={styles.stepSubtitle}>{registrationProgress.modules} of {registrationProgress.totalModules} chosen</Text>
             </View>
           </View>
 
           {/* Step 2 - Clashes */}
           <View style={styles.progressItem}>
-            <View style={[styles.stepIcon, { backgroundColor: progress.clashes > 0 ? COLORS.warning : COLORS.success }]}>
-              {progress.clashes > 0 ? (
+            <View style={[styles.stepIcon, { backgroundColor: registrationProgress.clashes > 0 ? COLORS.warning : COLORS.success }]}>
+              {registrationProgress.clashes > 0 ? (
                 <Text style={styles.stepIconText}>!</Text>
               ) : (
                 <Text style={styles.stepIconText}>✓</Text>
@@ -136,10 +126,10 @@ export default function DashboardScreen({ navigation }) {
             </View>
             <View style={styles.progressLine} />
             <View style={styles.stepContent}>
-              {progress.clashes > 0 ? (
+              {registrationProgress.clashes > 0 ? (
                 <>
                   <Text style={[styles.stepTitle, { color: COLORS.warning }]}>
-                    {progress.clashes} clash{progress.clashes > 1 ? 'es' : ''} to resolve
+                    {registrationProgress.clashes} clash{registrationProgress.clashes > 1 ? 'es' : ''} to resolve
                   </Text>
                   <Text style={[styles.stepSubtitle, { color: COLORS.warning }]}>
                     {clashes[0]?.moduleA} overlaps {clashes[0]?.moduleB}
@@ -156,8 +146,8 @@ export default function DashboardScreen({ navigation }) {
 
           {/* Step 3 - Timetable */}
           <View style={styles.progressItem}>
-            <View style={[styles.stepIcon, { backgroundColor: progress.timetableReviewed ? COLORS.success : COLORS.border }]}>
-              {progress.timetableReviewed ? (
+            <View style={[styles.stepIcon, { backgroundColor: registrationProgress.timetableReviewed ? COLORS.success : COLORS.border }]}>
+              {registrationProgress.timetableReviewed ? (
                 <Text style={styles.stepIconText}>✓</Text>
               ) : (
                 <View style={styles.stepIconEmpty} />
@@ -166,7 +156,7 @@ export default function DashboardScreen({ navigation }) {
             <View style={styles.stepContent}>
               <Text style={styles.stepTitle}>Review weekly timetable</Text>
               <Text style={styles.stepSubtitle}>
-                {progress.timetableReviewed ? 'Completed' : 'Not started'}
+                {registrationProgress.timetableReviewed ? 'Completed' : 'Not started'}
               </Text>
             </View>
           </View>
@@ -184,7 +174,7 @@ export default function DashboardScreen({ navigation }) {
               </Text>
               <PrimaryButton
                 title="View confirmed timetable"
-                onPress={() => navigation.navigate('Confirmation')}
+                onPress={handleResumeCTA}
               />
             </View>
           ) : (
