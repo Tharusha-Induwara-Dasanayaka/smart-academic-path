@@ -13,6 +13,7 @@ import { COLORS, FONTS, SPACING, RADIUS, SHADOWS } from '../constants/theme';
 import { PrimaryButton } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import AppLogo from '../components/AppLogo';
 
 export default function LoginScreen({ navigation }) {
   const { login, loginDemo, isAuthenticated: authIsAuthenticated } = useAuth();
@@ -105,7 +106,7 @@ export default function LoginScreen({ navigation }) {
         {/* Logo */}
         <View style={styles.logoContainer}>
           <View style={styles.logoBox}>
-            <Text style={styles.logoEmoji}>🎓</Text>
+            <AppLogo size={64} onWhite={true} />
           </View>
         </View>
 
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primaryLight,
     ...SHADOWS.md,
   },
-  logoEmoji: { fontSize: 48 },
+  logoEmoji: { fontSize: 48 },  // kept for reference
 
   title: {
     fontSize: FONTS.sizes.xl,

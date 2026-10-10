@@ -9,6 +9,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, SPACING } from '../constants/theme';
 import { useApp } from '../context/AppContext';
+import AppLogo from '../components/AppLogo';
 
 const { width, height } = Dimensions.get('window');
 
@@ -88,7 +89,7 @@ export default function SplashScreen({ navigation }) {
         ]}
       >
         <View style={styles.logoBox}>
-          <Text style={styles.logoEmoji}>🎓</Text>
+          <AppLogo size={90} onWhite={true} />
         </View>
       </Animated.View>
 
